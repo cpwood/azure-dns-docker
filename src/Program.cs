@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Rest.Azure.Authentication;
 using Microsoft.Azure.Management.Dns;
 using Microsoft.Azure.Management.Dns.Models;
+using Microsoft.Extensions.Logging;
 
 namespace DynamicAzureDns
 {
@@ -19,42 +20,89 @@ namespace DynamicAzureDns
         static async Task MainAsync()
         {
             using var httpClient = new HttpClient();
-
-            var tenantId = Environment.GetEnvironmentVariable("TENANT_ID");
-            var clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
-            var secret = Environment.GetEnvironmentVariable("SECRET");
-            var subscriptionId = Environment.GetEnvironmentVariable("SUBSCRIPTION_ID");
-            var resourceGroupName = Environment.GetEnvironmentVariable("RESOURCE_GROUP");
-            var zoneName = Environment.GetEnvironmentVariable("ZONE_NAME");
-            var recordSetName = Environment.GetEnvironmentVariable("RECORD_NAME");
             
-            // Default 15 minutes
-            var delay = int.Parse(Environment.GetEnvironmentVariable("DELAY") ?? "900000");
-            
-            // Default 5 minutes
-            var ttl = int.Parse(Environment.GetEnvironmentVariable("TTL") ?? "300");
-            
-            var credentials = await ApplicationTokenProvider.LoginSilentAsync(tenantId, clientId, secret);
-            var dnsClient = new DnsManagementClient(credentials) {SubscriptionId = subscriptionId};
-
-            while (true)
+            using var loggerFactory = LoggerFactory.Create(builder =>
             {
-                var ipAddress = (await httpClient.GetStringAsync("https://api.ipify.org"))?.Trim();
+                builder
+                    .AddFilter("Microsoft", LogLevel.Warning)
+                    .AddFilter("System", LogLevel.Warning)
+                    .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
+                    .AddConsole();
+            });
+            
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogInformation("Starting up..");
 
-                var recordSets = await dnsClient.RecordSets.ListByDnsZoneAsync(resourceGroupName, zoneName);
-                var recordSet = recordSets.FirstOrDefault(x => x.Name == recordSetName) ??
-                                new RecordSet {ARecords = new List<ARecord>()};
+            try
+            {
+                var tenantId = GetValue("TENANT_ID");
+                var clientId = GetValue("CLIENT_ID");
+                var secret = GetValue("SECRET");
+                var subscriptionId = GetValue("SUBSCRIPTION_ID");
+                var resourceGroupName = GetValue("RESOURCE_GROUP");
+                var zoneName = GetValue("ZONE_NAME");
+                var recordSetName = GetValue("RECORD_NAME");
+            
+                // Default 15 minutes
+                var delay = int.Parse(GetValue("DELAY", false) ?? "900000");
+            
+                // Default 5 minutes
+                var ttl = int.Parse(GetValue("TTL", false) ?? "300");
+                
+                var ipAddress = string.Empty;
 
-                recordSet.ARecords.Clear();
-                recordSet.ARecords.Add(new ARecord(ipAddress));
-                recordSet.TTL = ttl;
+                while (true)
+                {
+                    logger.LogTrace("Getting current IP address..");
+                    var temp = (await httpClient.GetStringAsync("https://api.ipify.org"))?.Trim();
 
-                await dnsClient.RecordSets.CreateOrUpdateAsync(resourceGroupName, zoneName, recordSetName, RecordType.A,
-                    recordSet, recordSet.Etag);
+                    if (temp != null && !temp.Equals(ipAddress, StringComparison.InvariantCulture))
+                    {
+                        ipAddress = temp;
+                        
+                        logger.LogTrace("Logging in to Azure DNS Zone with credentials..");
+                        var credentials = await ApplicationTokenProvider.LoginSilentAsync(tenantId, clientId, secret);
+                        var dnsClient = new DnsManagementClient(credentials) {SubscriptionId = subscriptionId};
+                        
+                        logger.LogTrace("Finding record sets for zone..");
+                        var recordSets = await dnsClient.RecordSets.ListByDnsZoneAsync(resourceGroupName, zoneName);
+                        var recordSet = recordSets.FirstOrDefault(x => x.Name == recordSetName) ??
+                                        new RecordSet {ARecords = new List<ARecord>()};
 
-                await Task.Delay(delay);
+                        recordSet.ARecords.Clear();
+                        recordSet.ARecords.Add(new ARecord(ipAddress));
+                        recordSet.TTL = ttl;
+
+                        logger.LogTrace($"Setting A-record for {recordSetName}.{zoneName} to {ipAddress} ..");
+                        await dnsClient.RecordSets.CreateOrUpdateAsync(resourceGroupName, zoneName, recordSetName, RecordType.A,
+                            recordSet, recordSet.Etag);
+                        
+                        logger.LogInformation($"A-record for {recordSetName}.{zoneName} set to {ipAddress} .");
+                    }
+                    else
+                    {
+                        logger.LogTrace($"Public IP address hasn't changed (still {ipAddress}).");
+                    }
+
+                    await Task.Delay(delay);
+                }
             }
+            catch (ArgumentNullException ex)
+            {
+                logger.LogCritical(ex, ex.Message);
+            }
+            
             // ReSharper disable once FunctionNeverReturns
+        }
+
+        static string GetValue(string name, bool required = true)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+
+            if (required && string.IsNullOrEmpty(value))
+                throw new ArgumentNullException(name, $"The '{name}' environment variable value must be set.");
+
+            return value;
         }
     }
 }

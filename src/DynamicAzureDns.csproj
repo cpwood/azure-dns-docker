@@ -8,6 +8,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Azure.Management.Dns" Version="3.0.1" />
       <PackageReference Include="Microsoft.Azure.Management.ResourceManager" Version="3.10.0-preview" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0-rc.2.20475.5" />
       <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.4.1" />
     </ItemGroup>
 
