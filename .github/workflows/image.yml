@@ -20,6 +20,7 @@ jobs:
       - name: build the image
         run: |
           docker buildx build \
+            --push \
             --file src/Dockerfile \
             --tag cpwood/azure-dns-docker:latest \
             --platform linux/amd64,linux/arm/v7,linux/arm64 .

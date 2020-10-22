@@ -1,5 +1,5 @@
 # Stage 1
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine AS build
 WORKDIR /build
 COPY . .
 RUN dotnet restore
