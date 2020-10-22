@@ -1,5 +1,5 @@
 # Stage 1
-FROM --platform:linux/amd64 mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 WORKDIR /build
 COPY . .
 RUN dotnet restore
