@@ -26,6 +26,7 @@ jobs:
         uses: frabert/replace-string-action@v1.2
         with:
           pattern: '\>([0-9+]\.[0-9]+)\.[0-9+]\<'
+          flags: g
           string: ${{ steps.read.outputs.content }}
           replace-with: '>$1.${{ github.run_number }}<'
       - name: Write file
@@ -62,6 +63,6 @@ jobs:
             --push \
             --file src/Dockerfile \
             --tag ${{ env.IMAGE }}:latest \
-            --tag ${{ env.IMAGE }}:${{ steps.version.outputs.info }}
+            --tag ${{ env.IMAGE }}:${{ steps.version.outputs.info }} \
             --build-arg DLL=${{ env.DLL }} \
             --platform linux/amd64,linux/arm/v7,linux/arm64 .
