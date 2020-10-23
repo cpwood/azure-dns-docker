@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/core/runtime:3.1
 ARG DLL
 ARG TARGETPLATFORM
+COPY publish/$TARGETPLATFORM /app
 WORKDIR /app
-COPY publish/$TARGETPLATFORM /app .
 ENTRYPOINT ["dotnet", $DLL]
