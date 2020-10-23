@@ -4,12 +4,24 @@ on:
   push:
     branches: main
 
+env:
+  DLL: DynamicAzureDns.dll
+  TAG: cpwood/azure-dns-docker:latest
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+      - name: create publish folder
+        run: mkdir publish
+      - name: build amd64
+        run: docker run --rm -it -v /src:/src -v /publish:/publish mcr.microsoft.com/dotnet/core/sdk:3.1 /bin/bash -c "cd /src; dotnet restore -r linux-musl-x64; dotnet publish -c release -o /publish/linux/amd64 -r linux-musl-arm64 --self-contained false --no-restore"
+      - name: build arm32
+        run: docker run --rm -it -v /src:/src -v /publish:/publish mcr.microsoft.com/dotnet/core/sdk:3.1 /bin/bash -c "cd /src; dotnet restore -r linux-arm; dotnet publish -c release -o /publish/linux/arm/v7 -r linux-arm --self-contained false --no-restore"
+      - name: build arm64
+        run: docker run --rm -it -v /src:/src -v /publish:/publish mcr.microsoft.com/dotnet/core/sdk:3.1 /bin/bash -c "cd /src; dotnet restore -r linux-musl-arm64; dotnet publish -c release -o /publish/linux/arm64 -r linux-musl-arm64 --self-contained false --no-restore"
       - name: install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -22,5 +34,6 @@ jobs:
           docker buildx build \
             --push \
             --file src/Dockerfile \
-            --tag cpwood/azure-dns-docker:latest \
+            --tag ${{ env.TAG }} \
+            --build-arg DLL=${{ env.DLL }} \
             --platform linux/amd64,linux/arm/v7,linux/arm64 .
