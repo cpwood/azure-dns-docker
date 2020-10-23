@@ -18,7 +18,7 @@ jobs:
       - name: create publish folder
         run: mkdir publish
       - name: build amd64
-        run: docker run -v ${{ github.workspace }}/src:/src -v ${{ github.workspace }}/publish:/publish mcr.microsoft.com/dotnet/core/sdk:3.1 /bin/bash -c "dotnet restore ${{ env.SLN }} -r linux-musl-x64; dotnet publish ${{ env.SLN }} -c release -o /publish/linux/amd64 -r linux-musl-arm64 --self-contained false --no-restore"
+        run: docker run -v ${{ github.workspace }}/src:/src -v ${{ github.workspace }}/publish:/publish mcr.microsoft.com/dotnet/core/sdk:3.1 /bin/bash -c "dotnet restore ${{ env.SLN }} -r linux-musl-x64; dotnet publish ${{ env.SLN }} -c release -o /publish/linux/amd64 -r linux-musl-x64 --self-contained false --no-restore"
       - name: build arm32
         run: docker run -v ${{ github.workspace }}/src:/src -v ${{ github.workspace }}/publish:/publish mcr.microsoft.com/dotnet/core/sdk:3.1 /bin/bash -c "dotnet restore ${{ env.SLN }} -r linux-arm; dotnet publish ${{ env.SLN }} -c release -o /publish/linux/arm/v7 -r linux-arm --self-contained false --no-restore"
       - name: build arm64
