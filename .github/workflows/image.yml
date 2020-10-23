@@ -5,9 +5,9 @@ on:
     branches: main
 
 env:
+  SLN: /src/DynamicAzureDns.sln
   DLL: DynamicAzureDns.dll
   TAG: cpwood/azure-dns-docker:latest
-  SLN: /src/DynamicAzureDns.sln
 
 jobs:
   build:
