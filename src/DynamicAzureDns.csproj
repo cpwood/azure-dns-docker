@@ -3,6 +3,14 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Title>DynamicAzureDns</Title>
+        <Authors>Chris Wood</Authors>
+        <PackageProjectUrl>https://github.com/cpwood/azure-dns-docker/</PackageProjectUrl>
+        <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/cpwood/azure-dns-docker/</RepositoryUrl>
+        <Company>Chris Wood</Company>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>

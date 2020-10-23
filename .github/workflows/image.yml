@@ -6,8 +6,9 @@ on:
 
 env:
   SLN: /src/DynamicAzureDns.sln
+  VERSION_PROJECT: src/DynamicAzureDns.csproj
   DLL: DynamicAzureDns.dll
-  TAG: cpwood/azure-dns-docker:latest
+  IMAGE: cpwood/azure-dns-docker
 
 jobs:
   build:
@@ -15,6 +16,31 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+      - name: Read file
+        id: read
+        uses: juliangruber/read-file-action@v1.0.0
+        with:
+          path: $VERSION_PROJECT
+      - name: Replace version number
+        id: replace
+        uses: frabert/replace-string-action@v1.2
+        with:
+          pattern: '\>([0-9+]\.[0-9]+)\.[0-9+]\<'
+          string: ${{ steps.read.outputs.content }}
+          replace-with: '>$1.${{ github.run_number }}<'
+      - name: Write file
+        id: write
+        uses: DamianReeves/write-file-action@v1.0
+        with:
+          path: $VERSION_PROJECT
+          contents: ${{ steps.replace.outputs.replaced }}
+          write-mode: overwrite
+      - name: Get final version number
+        id: version
+        uses: mavrosxristoforos/get-xml-info@1.0
+        with:
+          xml-file: $VERSION_PROJECT
+          xpath: //PropertyGroup/AssemblyVersion
       - name: create publish folder
         run: mkdir publish
       - name: build amd64
@@ -35,6 +61,7 @@ jobs:
           docker buildx build \
             --push \
             --file src/Dockerfile \
-            --tag ${{ env.TAG }} \
+            --tag ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:${{ steps.version.outputs.info }}
             --build-arg DLL=${{ env.DLL }} \
             --platform linux/amd64,linux/arm/v7,linux/arm64 .
