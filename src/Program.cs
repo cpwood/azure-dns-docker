@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Rest.Azure.Authentication;
 using Microsoft.Azure.Management.Dns;
@@ -31,7 +32,9 @@ namespace DynamicAzureDns
             });
             
             var logger = loggerFactory.CreateLogger<Program>();
-            logger.LogInformation("Starting up..");
+            
+            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+            logger.LogInformation($"Azure Dynamic DNS - v{version}");
 
             try
             {
