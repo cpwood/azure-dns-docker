@@ -13,15 +13,15 @@ Create a DNS Zone using the Azure Portal following [these instructions](https://
 3. Click the **New Registration** button.
 4. Provide a name - e.g. AzureDnsDocker - and leave all other values as their defaults.
 5. Click **Register**.
-6. Copy the **Application (Client) ID** value; you'll need this for the `CLIENT_ID` environment variable.
-7. Copy the **Directory (Tenant) ID** value; you'll need this for the `TENANT_ID` environment variable.
+6. Copy the **Application (Client) ID** value; you'll need this for the `CLIENTID` environment variable.
+7. Copy the **Directory (Tenant) ID** value; you'll need this for the `TENANTID` environment variable.
 8. Click the **Certificates & secrets** option in your app's left-hand menu.
 9. Click the **New Client Secret** button.
 10. Give the secret a name - e.g. AzureDnsDocker - and choose an expiration period you're comfortable with.
 11. Copy the new secret value; you'll need this for the `SECRET` environment variable.
 12. Go back to the main Azure left-hand menu (top left) and click **Home**.
 13. Under the **Navigate** heading, choose **Subscriptions**.
-14. Find the subscription associated with the DNS Zone and copy the **Subscription ID**; you'll need this for the `SUBSCRIPTION_ID` environment variable.
+14. Find the subscription associated with the DNS Zone and copy the **Subscription ID**; you'll need this for the `SUBSCRIPTIONID` environment variable.
 
 ### Grant the service principal read and write access to your DNS Zone
 
@@ -35,13 +35,13 @@ Create a DNS Zone using the Azure Portal following [these instructions](https://
 
 ```
 docker run -d --name azure-dns-docker \
--e TENANT_ID={tenant-id-guid} \
--e CLIENT_ID={client-id-guid} \
+-e TENANTID={tenant-id-guid} \
+-e CLIENTID={client-id-guid} \
 -e SECRET={secret} \
--e SUBSCRIPTION_ID={subscription-id-guid} \
--e RESOURCE_GROUP={resource-group-name} \
--e ZONE_NAME={domain-name}
--e RECORD_NAME={host-name}
+-e SUBSCRIPTIONID={subscription-id-guid} \
+-e RESOURCEGROUP={resource-group-name} \
+-e ZONENAME={domain-name}
+-e RECORDNAME={host-name}
 cpwood/azure-dns-docker
 ```
 
@@ -49,13 +49,13 @@ For example, to set the A-record for `foo.bar.com` in the `bar.com` DNS Zone wit
 
 ```
 docker run -d --name azure-dns-docker \
--e TENANT_ID=004097ec-5f22-400d-87ef-9c5a75c8a95c \
--e CLIENT_ID=03022824-f618-430e-8e73-18cef20d35ab \
+-e TENANTID=004097ec-5f22-400d-87ef-9c5a75c8a95c \
+-e CLIENTID=03022824-f618-430e-8e73-18cef20d35ab \
 -e SECRET=oaaodgioadgadoigjda_g8sg7 \
--e SUBSCRIPTION_ID=0a32c718-edf0-443c-bba3-37578e0346c6 \
--e RESOURCE_GROUP=Bar \
--e ZONE_NAME=bar.com
--e RECORD_NAME=foo
+-e SUBSCRIPTIONID=0a32c718-edf0-443c-bba3-37578e0346c6 \
+-e RESOURCEGROUP=Bar \
+-e ZONENAME=bar.com
+-e RECORDNAME=foo
 cpwood/azure-dns-docker
 ```
 
