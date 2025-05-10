@@ -45,9 +45,9 @@ namespace DynamicAzureDns
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     _logger.LogTrace("Getting current IP address..");
-                    var temp = (await httpClient.GetStringAsync("https://api.ipify.org"))?.Trim();
+                    var temp = (await httpClient.GetStringAsync("https://api.ipify.org")).Trim();
 
-                    if (temp != null && !temp.Equals(ipAddress, StringComparison.InvariantCulture))
+                    if (!temp.Equals(ipAddress, StringComparison.InvariantCulture))
                     {
                         ipAddress = temp;
                         

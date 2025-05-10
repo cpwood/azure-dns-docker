@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/runtime:3.1
+FROM mcr.microsoft.com/dotnet/runtime:8.0
 ARG DLL
 ARG TARGETPLATFORM
 COPY publish/$TARGETPLATFORM /app
